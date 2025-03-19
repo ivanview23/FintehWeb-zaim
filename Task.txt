@@ -1,0 +1,375 @@
+-- Основная таблица заявок на кредит
+CREATE TABLE loan_requests (
+    loan_request_id UUID PRIMARY KEY,
+    loaded_at TIMESTAMP NOT NULL
+);
+
+-- Таблица с информацией о заявителе
+CREATE TABLE reg_person (
+    loan_request_id UUID REFERENCES loan_requests(loan_request_id),
+    first_name VARCHAR(255) NOT NULL,
+    middle_name VARCHAR(255),
+    last_name VARCHAR(255) NOT NULL,
+    PRIMARY KEY (loan_request_id)
+);
+
+-- Таблица бюро кредитных историй
+CREATE TABLE credit_bureau (
+    loan_request_id UUID REFERENCES loan_requests(loan_request_id),
+    verified_name JSONB,
+    PRIMARY KEY (loan_request_id)
+);
+
+-- Таблица информации об аккаунтах
+CREATE TABLE account_info (
+    account_id SERIAL PRIMARY KEY,
+    loan_request_id UUID REFERENCES loan_requests(loan_request_id),
+    account_number VARCHAR(50),
+    account_status VARCHAR(50),
+    current_balance DECIMAL(15, 5),
+    date_opened DATE,
+    days_in_arrears INTEGER,
+    delinquency_code VARCHAR(10),
+    highest_days_in_arrears INTEGER,
+    is_your_account BOOLEAN,
+    last_payment_amount DECIMAL(15, 5),
+    last_payment_date DATE,
+    loaded_at DATE,
+    original_amount DECIMAL(15, 5),
+    overdue_balance DECIMAL(15, 5),
+    overdue_date DATE,
+    product_type_id INTEGER
+);
+
+**________________________________________**
+
+-- Создание таблицы настроек
+CREATE TABLE settings (
+    setting_key VARCHAR(255) PRIMARY KEY,
+    setting_value NUMERIC NOT NULL
+);
+
+-- Добавление начального значения порога соотношения расстояния
+INSERT INTO settings (setting_key, setting_value) VALUES ('distanceRatioThreshold', 0.9);
+
+-- Создание таблицы для хранения JSON данных заявок
+CREATE TABLE request_content (
+    id SERIAL PRIMARY KEY,
+    json_content JSONB NOT NULL
+);
+
+-- Добавление примера данных из предоставленного JSON
+INSERT INTO request_content (json_content) VALUES ('{
+    "loanRequestID": "0190e7b2-14a8-72e4-8528-89a8cd91d430",
+    "regPerson": {
+        "firstName": "Ogada",
+        "middleName": "Isaac Abraham",
+        "lastName": "Samuel"
+    },
+    "creditBureau": {
+        "account_info": [{
+            "account_number": "25470392059420191215",
+            "account_status": "Closed",
+            "current_balance": "0.00000",
+            "date_opened": "2019-12-15",
+            "days_in_arrears": 0,
+            "delinquency_code": "003",
+            "highest_days_in_arrears": 51,
+            "is_your_account": false,
+            "last_payment_amount": "0.00000",
+            "last_payment_date": null,
+            "loaded_at": "2020-04-16",
+            "original_amount": "608.10000",
+            "overdue_balance": "0.00000",
+            "overdue_date": null,
+            "product_type_id": 7
+        }, {
+            "account_number": "25470392059420200414",
+            "account_status": "Closed",
+            "current_balance": "0.00000",
+            "date_opened": "2020-04-14",
+            "days_in_arrears": 0,
+            "delinquency_code": "003",
+            "highest_days_in_arrears": 0,
+            "is_your_account": false,
+            "last_payment_amount": "644.10000",
+            "last_payment_date": "2020-09-30",
+            "loaded_at": "2020-09-30",
+            "original_amount": "644.10000",
+            "overdue_balance": "0.00000",
+            "overdue_date": null,
+            "product_type_id": 7
+        }],
+        "verified_name": {
+            "first_name": "ISAAC",
+            "other_name": "ABRAHAM SAMUEL",
+            "surname": "OGADA"
+        }
+    }
+}');
+
+-- Таблица для информации о заявителе
+CREATE TABLE reg_person (
+    loan_request_id UUID PRIMARY KEY,
+    first_name VARCHAR(255) NOT NULL,
+    middle_name VARCHAR(255),
+    last_name VARCHAR(255) NOT NULL
+);
+
+-- Таблица для информации об аккаунтах
+CREATE TABLE account_info (
+    account_id SERIAL PRIMARY KEY,
+    loan_request_id UUID REFERENCES reg_person(loan_request_id),
+    account_number VARCHAR(50),
+    account_status VARCHAR(50),
+    current_balance DECIMAL(15, 5),
+    date_opened DATE,
+    days_in_arrears INTEGER,
+    delinquency_code VARCHAR(10),
+    highest_days_in_arrears INTEGER,
+    is_your_account BOOLEAN,
+    last_payment_amount DECIMAL(15, 5),
+    last_payment_date DATE,
+    loaded_at DATE,
+    original_amount DECIMAL(15, 5),
+    overdue_balance DECIMAL(15, 5),
+    overdue_date DATE,
+    product_type_id INTEGER
+);
+
+-- Таблица для верифицированных данных
+CREATE TABLE verified_name (
+    loan_request_id UUID PRIMARY KEY REFERENCES reg_person(loan_request_id),
+    first_name VARCHAR(255),
+    other_name VARCHAR(255),
+    surname VARCHAR(255)
+);
+
+CREATE TABLE settings (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    value FLOAT NOT NULL
+);
+
++++++++++++++++++++++++++++++++++++++
+
+        <createTable tableName="test">
+            <column name="id" type="serial" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar(255)"/>
+            <column name="value" type="float"/>
+        </createTable>
+
+        <insert tableName="test">
+            <column name="name" value="distanceRatioThreshold"/>
+            <column name="value" value="0.9"/>
+        </insert>
+
+
+services:
+  liquibase:
+    image: liquibase/liquibase:latest
+    volumes:
+      - ./changelog:/liquibase/changelog
+    command: ["sh", "-c", "while ! pg_isready -h db -p 5432 -U ivanview; do sleep 2; done && liquibase update --changeLogFile=changelog.xml --url=jdbc:postgresql://db:5432/postgresdb --username=ivanview --password=postgres"]
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
+
+
+++++++++++++++++++++++++++++++++++===
+
+version: '3.9'
+
+services:
+  db:
+    image: postgres
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: ivanview
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgresdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ivanview -d postgresdb" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgresdb
+      - SPRING_DATASOURCE_USERNAME=ivanview
+      - SPRING_DATASOURCE_PASSWORD=postgres
+    ports:
+      - "8080:8080"
+
+  liquibase:
+    image: liquibase/liquibase:latest
+    volumes:
+      - ./changelog:/liquibase/changelog
+    command: [ "sh", "-c", "while ! pg_isready -h db -p 5432 -U ivanview; do sleep 2; done && liquibase update --changeLogFile=changelog.xml --url=jdbc:postgresql://db:5432/postgresdb --username=ivanview --password=postgres" ]
+#    command: ["liquibase", "update", "--changeLogFile=changelog.xml",
+#              "--url=jdbc:postgresql://db:5432/postgresdb",
+#              "--username=ivanview",
+#              "--password=postgres"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+
+[ "sh", "-c", "while ! pg_isready -h db -p 5432 -U ivanview; do sleep 2; done && liquibase update --changeLogFile=changelog.xml --url=jdbc:postgresql://db:5432/postgresdb --username=ivanview --password=postgres --log=debug" ]
+
+
+-----------------------------------------*************
+
+
+services:
+  db:
+    image: postgres
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: ivanview
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgresdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ivanview -d postgresdb" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  liquibase:
+    image: liquibase/liquibase:latest
+    volumes:
+      - ./changelog:/liquibase/changelog
+    command: [ "sh", "-c", "while ! curl -f http://db:5432 >/dev/null 2>&1; do sleep 2; done && liquibase update --changeLogFile=changelog.xml --url=jdbc:postgresql://db:5432/postgresdb --username=ivanview --password=postgres --log=debug" ]
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+  changelog:
+
+
+|||||||||||||||||||||||||||||||||||||||
+
+services:
+  db:
+    image: postgres
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: ivanview
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgresdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./changelog:/liquibase/changelog
+    command: [ "sh", "-c", "apt-get update && apt-get install -y curl && while ! curl -f localhost:5432 >/dev/null 2>&1; do sleep 2; done && liquibase update --changeLogFile=/liquibase/changelog/changelog.xml --url=jdbc:postgresql://localhost:5432/postgresdb --username=ivanview --password=postgres --log=debug && postgres" ]
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ivanview -d postgresdb" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  postgres-data:
+
+
+
+  ===============\\\\\\\\\\\\\\\\\\\
+
+  FROM openjdk:17-jdk-alpine
+  ARG JAR_FILE=target/*.jar
+  COPY ${JAR_FILE} app.jar
+  ENTRYPOINT ["java","-jar","/app.jar"]
+
+
+
+}}}}}}}}}}}}}}}}}}}}}}}}}
+
+
+services:
+  db:
+    container_name: postgres-db
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_USER: ivanview
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgresdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ivanview -d postgresdb" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  postgres-data:
+
+
+  .....................................
+
+
+  services:
+    db:
+      image: postgres:alpine
+      build:
+        context: .
+        dockerfile: Dockerfile
+      environment:
+        POSTGRES_USER: ivanview
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_DB: postgresdb
+      ports:
+        - "5432:5432"
+      volumes:
+        - postgres-data:/var/lib/postgresql/data
+      command: [ "postgres", "-c", "shared_buffers=256MB", "-c", "max_connections=100" ]
+      healthcheck:
+        test: [ "CMD-SHELL", "pg_isready -U ivanview -d postgresdb" ]
+        interval: 5s
+        timeout: 5s
+        retries: 5
+        start_period: 10s
+
+  volumes:
+    postgres-data:
+
+
+    {
+        "jsonContent": {
+            "key": "value",
+            "nested": {
+                "array": ["item1", "item2"]
+            }
+        }
+    }

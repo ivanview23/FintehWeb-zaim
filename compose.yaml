@@ -1,9 +1,16 @@
 services:
-  postgres:
-    image: 'postgres:latest'
+  db:
+    image: postgres:15
+    container_name: postgres-db
     environment:
-      - 'POSTGRES_DB=mydatabase'
-      - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_USER=myuser'
+      POSTGRES_USER: ivanview
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgresdb
+      POSTGRES_INITDB_ARGS: "-A md5"
     ports:
-      - '5432'
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:

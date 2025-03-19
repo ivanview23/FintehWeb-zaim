@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
+
+    <changeSet id="1" author="ivanview">
+        <createTable tableName="request_content">
+            <column name="id" type="serial" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="json_content" type="jsonb">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="test">
+            <column name="id" type="serial" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar(255)"/>
+            <column name="value" type="float"/>
+        </createTable>
+
+        <insert tableName="test">
+            <column name="name" value="distanceRatioThreshold"/>
+            <column name="value" value="0.9"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>
