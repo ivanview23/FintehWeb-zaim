@@ -1,0 +1,45 @@
+{
+	"info": {
+		"_postman_id": "a46e4211-3868-4fd4-a346-168f77542a0a",
+		"name": "loanRequest",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "31196136"
+	},
+	"item": [
+		{
+			"name": "http://localhost:8080/api/request-content",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"loanRequestID\": \"0190e7b2-14a8-72e4-8528-89a8cd91d430\",\n    \"regPerson\": {\n        \"firstName\": \"Ogada\",\n        \"middleName\": \"Isaac Abraham\",\n        \"lastName\": \"Samuel\"\n    },\n    \"creditBureau\": {\n        \"account_info\": [{\n            \"account_number\": \"25470392059420191215\",\n            \"account_status\": \"Closed\",\n            \"current_balance\": \"0.00000\",\n            \"date_opened\": \"2019-12-15\",\n            \"days_in_arrears\": 0,\n            \"delinquency_code\": \"003\",\n            \"highest_days_in_arrears\": 51,\n            \"is_your_account\": false,\n            \"last_payment_amount\": \"0.00000\",\n            \"last_payment_date\": null,\n            \"loaded_at\": \"2020-04-16\",\n            \"original_amount\": \"608.10000\",\n            \"overdue_balance\": \"0.00000\",\n            \"overdue_date\": null,\n            \"product_type_id\": 7\n        }, {\n            \"account_number\": \"25470392059420200414\",\n            \"account_status\": \"Closed\",\n            \"current_balance\": \"0.00000\",\n            \"date_opened\": \"2020-04-14\",\n            \"days_in_arrears\": 0,\n            \"delinquency_code\": \"003\",\n            \"highest_days_in_arrears\": 0,\n            \"is_your_account\": false,\n            \"last_payment_amount\": \"644.10000\",\n            \"last_payment_date\": \"2020-09-30\",\n            \"loaded_at\": \"2020-09-30\",\n            \"original_amount\": \"644.10000\",\n            \"overdue_balance\": \"0.00000\",\n            \"overdue_date\": null,\n            \"product_type_id\": 7\n        }],\n        \"verified_name\": {\n            \"first_name\": \"ISAAC\",\n            \"other_name\": \"ABRAHAM SAMUEL\",\n            \"surname\": \"OGADA\"\n        }\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/request-content",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"request-content"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
