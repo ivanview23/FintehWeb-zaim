@@ -22,9 +22,9 @@ public class RequestContentDTO {
             throw new IllegalArgumentException("jsonContent не может быть null");
         }
     }
-    public static RequestContentDTO fromJson(String json) throws JsonProcessingException {
+    public static RequestContentDTO fromJson(String stringJson) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(json, RequestContentDTO.class);
+        return mapper.readValue(stringJson, RequestContentDTO.class);
     }
 }
 

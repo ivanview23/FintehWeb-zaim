@@ -33,8 +33,9 @@ public class RequestContentController {
         // Приходит JSON преобразованный в строку
         log.warn("JsonContent -> {}", jsonContent);
 
-
+        // Соберем из этой строки DTO с полем типа jsonType
         RequestContentDTO dto = RequestContentDTO.fromJson(jsonContent);
+
         RequestContentEntity saved = service.saveRequest(dto);
 
         URI location = URI.create("/api/request-content/" + saved.getId());
